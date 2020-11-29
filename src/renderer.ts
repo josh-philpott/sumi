@@ -23,7 +23,10 @@ export class Renderer{
 
         for(const drop of this.drops){
             this.ctx.beginPath();
-            this.ctx.arc(drop.x, drop.y, drop.radius, 0, 2*Math.PI);
+            for(const point of drop.points){
+                this.ctx.lineTo(point.x, point.y)
+            }
+            this.ctx.closePath()
             this.ctx.fillStyle = drop.color;
             this.ctx.fill()
         }
