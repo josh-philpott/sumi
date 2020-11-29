@@ -1,18 +1,19 @@
 import { Drop } from './drop'
 import { Renderer } from './renderer'
-import { Vector2 } from './vector'
-import { Motion } from './motion'
+
+// can be set in the console to view particles
+let ENABLE_PARTICLES = false;
 
 const app = document.getElementById('app')
 const renderer = new Renderer()
 app?.appendChild(renderer.domElement)
 
 renderer.setSize(window.innerWidth, window.innerHeight)
-renderer.draw()
+renderer.draw(ENABLE_PARTICLES)
 
 window.onresize = () => {
     renderer.setSize(window.innerWidth, window.innerHeight)
-    renderer.draw()
+    renderer.draw(ENABLE_PARTICLES)
 }
 
 
@@ -31,44 +32,41 @@ window.onmousemove = (event: MouseEvent) => {
 
 
 // motions that are still running but are not the motion from the active mouse event
-let motions: Motion[] = [];
+let currentDrop: Drop;
 
 // add friction to motions and handle when they need to be deleted
 setInterval(()=>{
-    for(let i = 0; i<motions.length; i++){
-        // if we're still actively dropping ink, adjust the position to match the mouse
-        if(i===0 && isMouseDown){ 
-            motions[0].center.x = mousex
-            motions[0].center.y = mousey
+    if(currentDrop){
+        const startTime = Date.now();
+
+        // if the mouse is being held down, make sure the center of the motion
+        // is the current mouse position
+        if(isMouseDown){
+            currentDrop.x = mousex;
+            currentDrop.y = mousey;
         }
 
-        // ensure that all motions that aren't the top one have friction enabled
-        if(i>0 && !motions[i].frictionEnabled) {
-            motions[i].enableFriction()
-        }
-        
-        // stop other motions for now.....
-        if(i > 0) {
-            motions.splice(i, 1);
-            i--
-        }
-         
-        const stopped = motions[i].addFriction()
+        // when friction is enabled, add friction will reduce the speed of the 
+        // motion until the motion stops. 
+        const stopped = currentDrop.addFriction()
 
-        if(stopped){
-            motions.splice(i, 1)
-            i-=1;
-        }else{
+        // if there's motion, add the ink force to all drops
+        if(stopped) currentDrop = null;
+        else{
             for(let drop of renderer.drops){
-                drop.inkForce(motions[i].center, motions[i].radius)
+                drop.addInkForce(currentDrop)
             }
         }
+        renderer.draw(ENABLE_PARTICLES);
+
+        const endTime = Date.now();
+        console.debug(`Frame computed in ${endTime - startTime} millis.`)
     }
-    renderer.draw();
-}, 50);
+}, 15);
 
 
 window.onmousedown = (e: MouseEvent) => {
+
     //Add a new drop
     currentColor = (currentColor + 1) % colors.length
     console.log(currentColor)
@@ -81,17 +79,13 @@ window.onmousedown = (e: MouseEvent) => {
     let sizeJitter = 5 - Math.floor(Math.random()*10);
 
     
+    currentDrop = new Drop(e.offsetX + xNoise, e.offsetY + yNoise, 20+sizeJitter, colors[currentColor])
+    renderer.drops.push(currentDrop);
 
-    renderer.drops.push(new Drop(e.offsetX + xNoise, e.offsetY + yNoise, 20+sizeJitter, colors[currentColor]));
-
-    //Create a new motion
-    motions.unshift(new Motion(new Vector2(mousex + xNoise, mousey+yNoise), 20+sizeJitter))
     isMouseDown = true;
 }
 
 window.onmouseup = ()=>{
     isMouseDown = false;
-    if(motions[0]){
-        motions[0].enableFriction();
-    }
+    if(currentDrop) currentDrop.enableFriction();
 }

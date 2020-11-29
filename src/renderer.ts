@@ -16,19 +16,24 @@ export class Renderer{
         this.domElement.height = height;
     }
 
-    draw(){
-        //background
+    draw(particles_enabled:boolean){
+        //fillbackground
         this.ctx.fillStyle = "white"
         this.ctx.fillRect(0,0,this.domElement.width, this.domElement.height)
 
+        //draw points
         for(const drop of this.drops){
-            this.ctx.beginPath();
-            for(const point of drop.points){
-                this.ctx.lineTo(point.x, point.y)
-            }
-            this.ctx.closePath()
+            let path = drop.getPath();
             this.ctx.fillStyle = drop.color;
-            this.ctx.fill()
+            this.ctx.fill(path)
+
+            if(particles_enabled){
+                const points = drop.getPoints();
+                for(let point of points){
+                    this.ctx.fillStyle = "red";
+                    this.ctx.fill(point)
+                }
+            }
         }
     }
 }
