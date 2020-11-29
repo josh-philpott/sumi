@@ -1,6 +1,6 @@
 # About
 
-Sumi is an  attempt to simulate Suminigash, the Japanese art of water marbling. Other marbling simulators exist out there, but I want to make something that captures the feeling and experience of doing sumingashi. The way the ink shoots from the brush, how the forces of fluid dynamics naturally spawn from the forces the ink produces in the water, the imperfections and lack of control. 
+Sumi is an  attempt to simulate Suminagashi, the Japanese art of water marbling. Other marbling simulators exist out there, but I want to make something that captures the feeling and experience of doing sumingashi. The way the ink shoots from the brush, how the forces of fluid dynamics naturally spawn from the forces the ink produces in the water, the imperfections and lack of control. 
 
 
 # Credit
